@@ -5,7 +5,7 @@ from coopr.pyomo import ConcreteModel, Objective, Constraint, Var
 from coopr.pyomo import Binary, NonNegativeIntegers
 from coopr.pyomo import summation
 
-data = json.load(open('data.json'))
+data = json.load(open('/tmp/data.json'))
 G = nx.DiGraph()
 for node in data['nodes']:
     G.add_node(node['index'])
@@ -26,15 +26,15 @@ model = ConcreteModel('layout')
 model.y = Var([node['index'] for node in data['nodes']],
               domain=NonNegativeIntegers)
 for node in data['nodes']:
-    yi = 'y{}'.format(node['index'])
+    yi = 'y{0}'.format(node['index'])
     if G.in_degree(node['index']) == 0:
         setattr(model, yi, Constraint(expr=model.y[node['index']] == 0))
     elif G.out_degree(node['index']) == 0:
         setattr(model, yi, Constraint(expr=model.y[node['index']] == maxLayer))
 for i, link in enumerate(data['links']):
-    xi = 'x{}'.format(i)
-    edgei = 'edge{}'.format(i)
-    mci = 'mc{}'.format(i)
+    xi = 'x{0}'.format(i)
+    edgei = 'edge{0}'.format(i)
+    mci = 'mc{0}'.format(i)
     u = link['source']
     v = link['target']
     setattr(model, xi, Var(L, domain=Binary))
@@ -43,6 +43,6 @@ for i, link in enumerate(data['links']):
                        - model.y[v] + model.y[u] == 0))
     setattr(model, mci, Constraint(expr=summation(getattr(model, xi)) == 1))
 
-model.OBJ = Objective(expr=sum(sum(k * k * getattr(model, 'x{}'.format(i))[k]
+model.OBJ = Objective(expr=sum(sum(k * k * getattr(model, 'x{0}'.format(i))[k]
                                    for k in L)
                                for i in range(len(data['links']))))
